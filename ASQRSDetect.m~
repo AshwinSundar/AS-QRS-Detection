@@ -1,0 +1,10 @@
+% I want to implement the ideas Professor Spano has given me here. Let's
+% just start by implementing what you think will work best, without placing
+% too much emphasis on having a basis for the reasoning for your numerical
+% decisions. I realize this is not a recommended software development
+% approach, but I'd like to start generating performance data and run a few
+% tests, and then move from there. 
+
+buffer; % circular buffer containing last 1k data points (5 seconds @ 200Hz)
+signalMean; % average of circular buffer. Calculate once, then subtract the
+% point divided by 200 and add the new
