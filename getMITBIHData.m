@@ -21,22 +21,11 @@
 %%%% %%%% %%%% %%%% 
 %%%% %%%% %%%% %%%% 
 
-function [buffer, tm, signal] = getMITBIHData
+function [fullData, fullTime, fullSignal] = getMITBIHData
+    fullData = zeros(650000, 2);
     sampleRate = 360; % Sample rate of MIT-BIH Arrhythmia data
     QRSLength = 150; % QRS complex spans 60-100 ms in healthy patients, up to 
     % 150 ms in patients with cardiac problems (Sivaraks 2014, Kim 2016). 
-    buffer = zeros(sampleRate*QRSLength/1000, 2); % circular buffer containing 
-    % last 54 data points (150ms).  
-    signalMean = 0; % average of circular buffer. Can be implemented in multiple 
-    % ways. Run perf testing to determine best technique. 
-    % Perf Test 1: Use inbuilt mean(data) function in MATLAB. Log results
-    % Perf Test 2: Calculate once, then subtract the point divided by 1000 and 
-    % add the newest point divided by 1000. Log results
-    signalStDev = 0; % standard deviation of signal. Run perf testing to determine
-    % best technique
-    % Perf Test 1: Use inbuilt std(data) function in MATLAB. Log results
-    % Perf Test 2: Calculate once, drop first point's deviation divided by
-    % 1000, add new point's deviation divided by 1000
     % First, get the data. WFDB Toolbox for MATLAB only runs in the wfdb folder. So navigate there first.
     cd C:\Users\Ashwin\Dropbox\'Applied Project'\'MIT-BIH Arrhythmia Data'\wfdb-app-toolbox-0-9-9\mcode
 
@@ -46,13 +35,11 @@ function [buffer, tm, signal] = getMITBIHData
     % signalList: default - read all signals
     % N: sample number to stop at
     % N0: sample number to begin at 
-    % rawunits: returns time and signal with varying precisions. 3 is 16-bit
-    % integers, I chose this because this is closer to the Photon DAC
-    % resolution of 13 bit. 
+    % rawunits: returns time and signal with varying precisions.
     % high resolution: default is off, 1 causes record to be "read in high
     % resolution mode" 
 
-    [tm, signal] = rdsamp('mitdb/100', [], length(buffer), 1, 3);
-    buffer(1:end,1) = tm;
-    buffer(1:end,2) = signal(1:end,1);
+    [fullTime, fullSignal] = rdsamp('mitdb/100');
+    fullData(1:end,1) = fullTime;
+    fullData(1:end,2) = fullSignal(1:end,1);
 end
