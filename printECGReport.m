@@ -23,7 +23,7 @@
 %%%% %%%% %%%% %%%% 
 %%%% %%%% %%%% %%%% 
 
-function printECGReport(tm, signal, signalMean, signalStDev)
+function printFullECGReport(tm, signal, signalMean, signalStDev)
     plot(tm, signal(1:end,1));
     hold on;
     plot([0,100],[signalMean,signalMean]);

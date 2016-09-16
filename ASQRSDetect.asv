@@ -8,9 +8,7 @@
 % What specific changes were made to this code, compared to the currently 
 % up-to-date code on GitHub?: Fixed issues implementing other functions. I
 % was cd'ing to a new directory to use WFDB, but not returning to the
-% previous directory when I attempted to call those functions. Labelling R 
-% peaks now as well. Next step is to implement moving average to help 
-% eliminate baseline drift artifact. 
+% previous directory when I attempted to call those functions. 
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -29,7 +27,7 @@ if(~exist('fullData'))
 end
 % Now we have the data. Let's run some analysis on it. 
 
-bufferSize = 1000; % larger buffers will likely improve performance, but are
+bufferSize = 10000; % larger buffers will likely improve performance, but are
 % also likely to degrade QRS detection. Size is measured in # of data
 % points to store, not temporal length.
 buffer = fullData(1:bufferSize,:);

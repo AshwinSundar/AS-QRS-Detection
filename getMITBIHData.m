@@ -42,4 +42,7 @@ function [fullData, fullTime, fullSignal] = getMITBIHData
     [fullTime, fullSignal] = rdsamp('mitdb/100');
     fullData(1:end,1) = fullTime;
     fullData(1:end,2) = fullSignal(1:end,1);
+    
+    % return to the directory you were originally in
+    cd C:\Users\Ashwin\Dropbox\'Applied Project'\AS-QRS-Detection
 end
