@@ -4,11 +4,10 @@
 %%%% %%%% %%%% %%%%
 % Title of File: getRPeak.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 14, 2016
+% Date of GitHub commit: September 16, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Separated finding R Peak into its own
-% function. Having issues implementing though, getting error "Undefined
-% function 'getRPeak' for input arguments of type 'double'. 
+% up-to-date code on GitHub?: Removed refrac period for first 250ms of
+% data, so I can detect peaks earlier. 
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -32,21 +31,19 @@ function RPeaks = getRPeak(buffer, signalMean, signalStDev)
 % think it will matter. I could use parallel processing, but I won't have 
 % access to that in Particle, so I won't. 
     sampleRate = 360;
-    refracPer = 0.250 % 250 milliseconds = 240bpm, which is probably 
+    refracPer = 0.250; % 250 milliseconds = 240bpm, which is probably 
     % humanly impossible. 
-    j = 2;
-    RPeaks = zeros(2,2)
+    j = 1; 
     for i=1:(length(buffer)-1)
-        % WARNING: this statement prohibits R detection in the first 250ms
-        % of a record
-        if(buffer(i,2) > signalMean + 3*signalStDev && (buffer(i,1) - RPeaks(j-1, 1)) > refracPer)
-            RPeaks(j,:) = buffer(i,:);
-            j = j + 1;
-        end
+        if(exist('RPeaks', 'var')) % checks if a variable with name RPeaks exists
+            if(buffer(i,2) > (signalMean + 3*signalStDev) && (buffer(i,1) - RPeaks(j-1, 1)) > refracPer)
+                RPeaks(j,:) = buffer(i,:);
+                j = j + 1;
+            end
+        elseif(~exist('RPeaks', 'var'))
+            if(buffer(i,2) > (signalMean + 3*signalStDev)) % no refrac period for first data point
+                RPeaks(j,:) = buffer(i,:);
+                j = j + 1;
+        end        
     end
-
-% I won't have access to a linear algebra toolbox in Particle. Since the
-% amount of data above 3SD is very small, I think I'll just use the median
-% (or left of median if I have an even number of points)
-    RPeaks
 end

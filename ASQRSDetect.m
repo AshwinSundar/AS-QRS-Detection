@@ -4,13 +4,10 @@
 %%%% %%%% %%%% %%%%
 % Title of File: ASQRSDetect.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 14, 2016
+% Date of GitHub commit: September 16, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Fixed issues implementing other functions. I
-% was cd'ing to a new directory to use WFDB, but not returning to the
-% previous directory when I attempted to call those functions. Labelling R 
-% peaks now as well. Next step is to implement moving average to help 
-% eliminate baseline drift artifact. 
+% up-to-date code on GitHub?: Moved data plotting to another file. Need to
+% begin Q and T detection soon. 
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -24,11 +21,12 @@
 %%%% %%%% %%%% %%%% 
 %%%% %%%% %%%% %%%% 
 
-if(~exist('fullData'))
+% if you don't have the full set locally, then get it.
+if(~exist('fullData')) 
     [fullData, fullTime, fullSignal] = getMITBIHData;
 end
-% Now we have the data. Let's run some analysis on it. 
 
+% Now we have the data. Let's run some analysis on it. 
 bufferSize = 1000; % larger buffers will likely improve performance, but are
 % also likely to degrade QRS detection. Size is measured in # of data
 % points to store, not temporal length.
@@ -43,13 +41,4 @@ signalStDev = std(buffer(1:end,2));
 % access to that in Particle, so I won't. 
 RPeaks = getRPeak(buffer, signalMean, signalStDev); 
 
-% If you want to plot, uncomment the following lines
-plot(buffer(1:end,1), buffer(1:end,2));
-hold on;
-plot([0,buffer(bufferSize,1)],[signalMean,signalMean]);
-plot([0,buffer(bufferSize,1)],[signalMean+signalStDev,signalMean+signalStDev]);
-plot([0,buffer(bufferSize,1)],[signalMean+3*signalStDev,signalMean+3*signalStDev]);
-plot(RPeaks(:,1), RPeaks(:,2), 'rv', 'MarkerFaceColor', 'r'); 
-legend('show');
-legend('ECG', 'Signal Mean', '1SD', '3SD');
-
+printECGReport(buffer, bufferSize, signalMean, signalStDev, RPeaks); 

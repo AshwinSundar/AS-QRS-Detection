@@ -4,10 +4,9 @@
 %%%% %%%% %%%% %%%%
 % Title of File: getMITBIHData.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 13, 2016
+% Date of GitHub commit: September 16, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Separated MIT-BIH request into its own
-% function. Intend to separate the rest of the code likewise. 
+% up-to-date code on GitHub?: Added ability to cd back to original directory.  
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
