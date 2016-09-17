@@ -4,10 +4,10 @@
 %%%% %%%% %%%% %%%%
 % Title of File: getRPeak.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 16, 2016
+% Date of GitHub commit: September 17, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Removed refrac period for first 250ms of
-% data, so I can detect peaks earlier. 
+% up-to-date code on GitHub?: Changed if statements so they catch actual
+% peaks, not just the start of the R wave.
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -24,26 +24,26 @@
 function RPeaks = getRPeak(buffer, signalMean, signalStDev)
 % I won't have access to a linear algebra toolbox in Particle. Since the
 % amount of data above 3SD is very small, I think I'll just use the median
-% (or left of median if I have an even number of points) 
+% (or left of median if I have an even number of points)
 % Next, let's locate the R peak. The R peak should be above the signal
 % mean, let's say 3 standard deviations beyond the signalMean. I could
 % preallocate a buffer to store the RPeak, but it's so small that I don't
-% think it will matter. I could use parallel processing, but I won't have 
-% access to that in Particle, so I won't. 
-    sampleRate = 360;
-    refracPer = 0.250; % 250 milliseconds = 240bpm, which is probably 
-    % humanly impossible. 
-    j = 1; 
-    for i=1:(length(buffer)-1)
-        if(exist('RPeaks', 'var')) % checks if a variable with name RPeaks exists
-            if(buffer(i,2) > (signalMean + 3*signalStDev) && (buffer(i,1) - RPeaks(j-1, 1)) > refracPer)
-                RPeaks(j,:) = buffer(i,:);
-                j = j + 1;
-            end
-        elseif(~exist('RPeaks', 'var'))
-            if(buffer(i,2) > (signalMean + 3*signalStDev)) % no refrac period for first data point
-                RPeaks(j,:) = buffer(i,:);
-                j = j + 1;
-        end        
+% think it will matter. I could use parallel processing, but I won't have
+% access to that in Particle, so I won't.
+sampleRate = 360;
+refracPer = 0.250; % 250 milliseconds = 240bpm, which is probably
+% humanly impossible.
+j = 1;
+for i=1:(length(buffer)-1)
+    if(exist('RPeaks', 'var')) % checks if a variable with name RPeaks exists
+        if(buffer(i,2) > (signalMean + 3*signalStDev) && (buffer(i,1) - RPeaks(j-1, 1)) > refracPer && buffer(i,2) > buffer(i+1,2))
+            RPeaks(j,:) = buffer(i,:);
+            j = j + 1;
+        end
+    elseif(~exist('RPeaks', 'var'))
+        if(buffer(i,2) > (signalMean + 3*signalStDev) && buffer(i,2) > buffer(i+1,2)) % no refrac period for first data point
+            RPeaks(j,:) = buffer(i,:);
+            j = j + 1;
+        end
     end
 end

@@ -4,10 +4,10 @@
 %%%% %%%% %%%% %%%%
 % Title of File: ASQRSDetect.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 16, 2016
+% Date of GitHub commit: September 17, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Moved data plotting to another file. Need to
-% begin Q and T detection soon. 
+% up-to-date code on GitHub?: Implemented getSWave. Fixed getRPeak so it
+% finds an actual peak, not just the start of the R wave. 
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -27,7 +27,7 @@ if(~exist('fullData'))
 end
 
 % Now we have the data. Let's run some analysis on it. 
-bufferSize = 1000; % larger buffers will likely improve performance, but are
+bufferSize = 650000; % larger buffers will likely improve performance, but are
 % also likely to degrade QRS detection. Size is measured in # of data
 % points to store, not temporal length.
 buffer = fullData(1:bufferSize,:);
@@ -40,5 +40,6 @@ signalStDev = std(buffer(1:end,2));
 % think it will matter. I could use parallel processing, but I won't have 
 % access to that in Particle, so I won't. 
 RPeaks = getRPeak(buffer, signalMean, signalStDev); 
+SPeaks = getSPeak(RPeaks, buffer); 
 
-printECGReport(buffer, bufferSize, signalMean, signalStDev, RPeaks); 
+printECGReport(buffer, bufferSize, signalMean, signalStDev, RPeaks, SPeaks); 
