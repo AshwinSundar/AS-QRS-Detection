@@ -4,10 +4,9 @@
 %%%% %%%% %%%% %%%%
 % Title of File: ASQRSDetect.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 17, 2016
+% Date of GitHub commit: September 19, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Implemented getSWave. Fixed getRPeak so it
-% finds an actual peak, not just the start of the R wave. 
+% up-to-date code on GitHub?: Implemented getQPeak. 
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -40,6 +39,7 @@ signalStDev = std(buffer(1:end,2));
 % think it will matter. I could use parallel processing, but I won't have 
 % access to that in Particle, so I won't. 
 RPeaks = getRPeak(buffer, signalMean, signalStDev); 
+QPeaks = getQPeak(RPeaks, buffer); 
 SPeaks = getSPeak(RPeaks, buffer); 
 
-printECGReport(buffer, bufferSize, signalMean, signalStDev, RPeaks, SPeaks); 
+printECGReport(buffer, bufferSize, signalMean, signalStDev, QPeaks, RPeaks, SPeaks); 
