@@ -4,9 +4,9 @@
 %%%% %%%% %%%% %%%%
 % Title of File: ASQRSDetect.m
 % Name of Editor: Ashwin Sundar
-% Date of GitHub commit: September 19, 2016
+% Date of GitHub commit: September 20, 2016
 % What specific changes were made to this code, compared to the currently 
-% up-to-date code on GitHub?: Implemented getQPeak. 
+% up-to-date code on GitHub?: Implemented getPPeak. Implemented getTPeak.
 %%%% %%%% %%%% %%%%
 % Best coding practices
 % 1) When you create a new variable or function, make it obvious what the 
@@ -40,6 +40,8 @@ signalStDev = std(buffer(1:end,2));
 % access to that in Particle, so I won't. 
 RPeaks = getRPeak(buffer, signalMean, signalStDev); 
 QPeaks = getQPeak(RPeaks, buffer); 
+PPeaks = getPPeak(QPeaks, buffer, signalMean);
 SPeaks = getSPeak(RPeaks, buffer); 
+TPeaks = getTPeak(SPeaks, buffer, signalMean);
 
-printECGReport(buffer, bufferSize, signalMean, signalStDev, QPeaks, RPeaks, SPeaks); 
+printECGReport(buffer, bufferSize, signalMean, signalStDev, PPeaks, QPeaks, RPeaks, SPeaks, TPeaks); 
