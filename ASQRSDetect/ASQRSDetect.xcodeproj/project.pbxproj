@@ -25,8 +25,7 @@
 /* Begin PBXFileReference section */
 		310CA5761D90BAA000091EB3 /* ASQRSDetect */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ASQRSDetect; sourceTree = BUILT_PRODUCTS_DIR; };
 		310CA5791D90BAA000091EB3 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		310CA5821D90C5C800091EB3 /* MITBIH100fullData.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MITBIH100fullData.txt; sourceTree = "<group>"; };
-		310CA5831D90D3E800091EB3 /* MITBIH100fullData.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MITBIH100fullData.txt; sourceTree = "<group>"; };
+		31300F021D9372C200F013BC /* MITBIH100fullData.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MITBIH100fullData.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,8 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				310CA5791D90BAA000091EB3 /* main.cpp */,
-				310CA5821D90C5C800091EB3 /* MITBIH100fullData.txt */,
-				310CA5831D90D3E800091EB3 /* MITBIH100fullData.txt */,
+				31300F021D9372C200F013BC /* MITBIH100fullData.txt */,
 			);
 			path = ASQRSDetect;
 			sourceTree = "<group>";
@@ -243,6 +241,7 @@
 				310CA57F1D90BAA000091EB3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

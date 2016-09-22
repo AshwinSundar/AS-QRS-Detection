@@ -3,9 +3,9 @@
 //// //// //// //// ////
 // Title of File: main.cpp
 // Name of Editor: Ashwin Sundar
-// Date of GitHub commit: September 20, 2016
+// Date of GitHub commit: September 21, 2016
 // What specific changes were made to this code, compared to the currently up-to-date code
-// on GitHub?: Initial commit. Beginning translation from MATLAB to C++. To read files, change XCodes working directory in Product -> Scheme -> Edit Scheme -> Run -> Options -> Use custom working directory. Working on converting .txt files to arrays that I can calculate stats on. Trying to figure out how to return an array from a function. Code does not currently compile. 
+// on GitHub?: std::stol/stoi/stod (string to double converter) seems to have given up working. I have a feeling I'm running into array indexing errors. I'll look into it tomorrow.
 //// //// //// //// ////
 // Best coding practices
 // 1) When you create a new variable or function, make it obvious what the variable or
@@ -18,7 +18,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <array>
 #include <string>
 #include <cstdlib>
 #include <climits>
@@ -26,38 +25,36 @@
 
 std::ifstream myFile;
 std::string line;
+double EKGData[650000][2]; // most MIT BIH data seems to be 650k samples long. I'm not sure why, but if I declare this inside main, I get what appears to be a memory address error. Clearing up space on my HDD didn't affect anything, but reducing the size of the array allocation inside the function, or just putting the declaration outside the function like I did here seems to clear the error.
 
-// This function gets a file in the working directory, parses it for CSVs, and returns an array containing the data. Origin of the file is from MATLAB - use rdsamp from WFDB module to get full EKG data set, then call 'dlmwrite('MITBIH100fullData.txt', fullData, 'precision', '%.3f', 'newline', 'pc')' to write the data to a file with appropriate precision and custom delimiters.
-double[] parseFile(std::string inputFile) {
-    double tempArray[650000][2]; // arrays cannot change size at runtime in C++. Make sure the size of the array is exactly the size of the data you need to parse.
+int main(int argc, const char * argv[])
+{
+    std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return arrays in C++ without some ridiculous legwork.
     std::string tempString; // holds a number while file is being parsed
     myFile.open(inputFile);
     
     if (myFile.is_open())
     {
-        int j = 1; // used to track columns in tempArray
+
+        int j = 1; // used to track columns in EKGData array
         while (getline(myFile, line)) // while the file has more content
         {
-            for(int i = 0; i < line.size(); i++) {
+            for(int i = 1; i < line.size(); i++)
+            {
+                std::cout << line[0];
                 j = 1;
-                switch (line[i] == ',') {
+                switch (line[i] == ',')
+                { // manual delimiting
                     case 0: // no comma, keep writing
                         tempString.push_back(line[i]);
                     case 1: // comma present, do something
-                        tempArray[i][j] = std::stoi(tempString); // write the temp string
+                        tempString = std::stod(tempString); // write the temp string
                         tempString = ""; // clear the temp string
                         j++; // move to next column
                 }
             }
-            // std::cout << line << '\n';
-            std::cout << line[1] << '\n';
         }
-        myFile.close();
     }
-    return tempArray;
-}
-
-int main(int argc, const char * argv[]) {
-    parseFile("MITBIH100fullData.txt");
+    myFile.close();
     return 0;
 }
