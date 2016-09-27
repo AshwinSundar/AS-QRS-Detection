@@ -3,9 +3,9 @@
 //// //// //// //// ////
 // Title of File: main.cpp
 // Name of Editor: Ashwin Sundar
-// Date of GitHub commit: September 24, 2016
+// Date of GitHub commit: September 27, 2016
 // What specific changes were made to this code, compared to the currently up-to-date code
-// on GitHub?: After talking to Jon, I learned the difference between static and dynamic variable allocation, as well as heap versus stack. Stack is small and fast memory, heap is large and slow(er) memory. Local variables are good to store in the stack, unless they are so large they overflow the stack - hence stack overflow, which is exactly what is happening with my 650000x2 array of EKG Data. I could either dynamically allocate the array and manually manage memory myself, or I can just use the vector "template" and allow vector to manage my memory for me. One nice plus is I can append to vectors, which wasn't an option with array. 
+// on GitHub?: Finished getting vector to work. I needed to just declare it normally, not as a pointer to a vector. Everything seems to work fine now. Next step is to implement R Peak detection.
 //// //// //// //// ////
 // Best coding practices
 // 1) When you create a new variable or function, make it obvious what the variable or
@@ -30,22 +30,12 @@ std::string line;
 // double EKGData; // most MIT BIH data seems to be 650k samples long. I'm not sure why, but if I declare this inside main, I get what appears to be a memory address error. Clearing up space on my HDD didn't affect anything, but reducing the size of the array allocation inside the function, or just putting the declaration outside the function like I did here seems to clear the error. I'm declaring this as a double because according to Prof Spano, most computers do their math in double by default. Even if you declare this as a float, which is smaller, your computer will first convert it to a double, do the math, then go back to float - which ends up taking longer.
 // EKGData = (double *) calloc (100, sizeof(int)); // not working
 
-int getFileSize(std::ifstream& myFile) {
-    int lineLength = 0;
-    std::string line;
-    while(getline(myFile,line))
-    {
-        lineLength++;
-    }
-    
-    return lineLength;
-}
-
 int main(int argc, const char * argv[])
 {
-//    float *EKGData = new float[650000*2];
-    std::vector<double> *EKGDataMeas; // preallocate is faster, but you can always append to vectors (as opposed to arrays)
-    std::vector<double> *EKGTimes;
+
+    // Use vectors, not arrays. Arrays must be preallocated, and cannot change size at runtime. Furthermore, arrays are stored in the stack, which is very fast but limited in size. On the other hand, vectors are stored in the heap, which is much larger (and suited for storing large sets). My program runs into memory issues when I attempt to use arrays to store large data sets.
+    std::vector<double> EKGDataMeas; // preallocate is faster, but you can always append to vectors (as opposed to arrays)
+    std::vector<double> EKGTimes;
     std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return arrays in C++ without some ridiculous legwork.
     std::string tempString; // holds a 'number' while file is being parsed
     myFile.open(inputFile);
@@ -97,21 +87,24 @@ int main(int argc, const char * argv[])
                     loc++;
                 }
                 
- 
+                double tempVar;
+                
                 switch (loc)
-                { 
+                {
                     case 1: // "before comma"
                         tempString.push_back(line[i]); // build EKGTimes tempString
                         break;
                     case 2: // "at comma"
-                        std::sscanf(tempString.data(), "%lf", &(EKGTimes[k])); // write tempString to EKGTimes;
+                        std::sscanf(tempString.data(), "%lf", &(tempVar)); // write tempString to EKGTimes;
+                        EKGTimes.push_back(tempVar);
                         tempString = ""; // clear the temp string
                         break;
                     case 3: // "after comma"
                         tempString.push_back(line[i]); // build EKGDataMeas tempString
                         break;
                     case 4: // "end of line"
-                        std::sscanf(tempString.data(), "%lf", &(EKGTimes[k])); // write tempString to EKGDataMeas;
+                        std::sscanf(tempString.data(), "%lf", &(tempVar)); // write tempString to EKGDataMeas;
+                        EKGDataMeas.push_back(tempVar); 
                         tempString = ""; // clear the temp string
                         break;
                     default:
@@ -123,6 +116,5 @@ int main(int argc, const char * argv[])
         }
     }
     myFile.close();
-    std::cout << EKGDataMeas;
     return 0;
 }
