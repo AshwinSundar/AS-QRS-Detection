@@ -3,9 +3,9 @@
 //// //// //// //// ////
 // Title of File: main.cpp
 // Name of Editor: Ashwin Sundar
-// Date of GitHub commit: September 27, 2016
+// Date of GitHub commit: September 29, 2016
 // What specific changes were made to this code, compared to the currently up-to-date code
-// on GitHub?: Finished getting vector to work. I needed to just declare it normally, not as a pointer to a vector. Everything seems to work fine now. Next step is to implement R Peak detection.
+// on GitHub?: Implementing getRPeak. I'm creating a custom vector at the moment that will compute stats for me so I don't have to keep doing it. Next step is to finish writing getStDev and implement ASVector. 
 //// //// //// //// ////
 // Best coding practices
 // 1) When you create a new variable or function, make it obvious what the variable or
@@ -21,27 +21,96 @@
 #include <string>
 #include <cstdlib>
 #include <climits>
-// #include <array>
 #include <vector>
 #include "stdio.h"
 
 std::ifstream myFile;
 std::string line;
-// double EKGData; // most MIT BIH data seems to be 650k samples long. I'm not sure why, but if I declare this inside main, I get what appears to be a memory address error. Clearing up space on my HDD didn't affect anything, but reducing the size of the array allocation inside the function, or just putting the declaration outside the function like I did here seems to clear the error. I'm declaring this as a double because according to Prof Spano, most computers do their math in double by default. Even if you declare this as a float, which is smaller, your computer will first convert it to a double, do the math, then go back to float - which ends up taking longer.
-// EKGData = (double *) calloc (100, sizeof(int)); // not working
+
+class ASVector
+{
+private:
+    std::vector<double> vec;
+public:
+    double getMean();
+    
+};
+
+double ASVector::getMean()
+{
+    double sum = 0;
+    double vecLen = sizeof(vec);
+    for (int i = 0; i < vecLen; i++)
+    {
+        sum += vec[i];
+    }
+    double mean = sum/vecLen;
+    return mean;
+}
+
+double ASVector::getStDev()
+{
+    // subtract mean from each value, square each, add them up
+    double vecLen = sizeof(vec);
+    for (int i = 0; i < vecLen, )
+}
+
+
+
+
+
+std::vector<double> getRPeak(std::vector<double> EKGDataMeasBuffer, std::vector<double> EKGTimesBuffer, double signalMean, double signalStDev)
+{
+// I won't have access to a linear algebra toolbox in Particle. Since the amount of data above 3SD is very small, I think I'll just use the median (or left of median if I have an even number of points). Next, let's locate the R peak. The R peak should be above the signal mean, let's say 3 standard deviations beyond the signalMean. I could preallocate a buffer to store the RPeak, but it's so small that I don't think it will matter. I could use parallel processing, but I won't have access to that in Particle, so I won't.
+    int sampleRate = 360; // AI: Needs to update dynamically depending on data stream
+    double refracPer = 0.250; // AI: Need a better reference for using this number (250 ms = 240 bpm)
+    std::vector<double> RPeaksTimes;
+    int j = 1; // counter
+    for (int i = 0; i < sizeof(EKGTimesBuffer); i++)
+    {
+        bool flag = 0; // used for the first portion of the code
+
+        if (flag) // then the refrac period has kicked in
+        {
+            if(EKGDataMeasBuffer[i] > (signalMean + 3*signalStDev) & EKGTimesBuffer[i] - RPeaksTimes[j-1] > refracPer & EKGDataMeasBuffer[i] > EKGDataMeasBuffer[i+1])
+            {
+                RPeaksTimes.push_back(EKGTimesBuffer[i]);
+                j++;
+            }
+
+        }
+        
+        if (!flag) // refrac period hasn't kicked in yet
+        {
+            if(EKGDataMeasBuffer[i] > signalMean + 3*signalStDev & EKGDataMeasBuffer[i] > EKGDataMeasBuffer[i+1]) // no refrac period on first R Peak found
+            {
+                RPeaksTimes.push_back(EKGTimesBuffer[i]);
+                j++;
+                flag = 1; // RPeaks now exists, refrac period kicks in so don't execute this if statement anymore
+            }
+            
+        }
+    }
+    
+    return RPeaksTimes;
+}
+
 
 int main(int argc, const char * argv[])
 {
 
-    // Use vectors, not arrays. Arrays must be preallocated, and cannot change size at runtime. Furthermore, arrays are stored in the stack, which is very fast but limited in size. On the other hand, vectors are stored in the heap, which is much larger (and suited for storing large sets). My program runs into memory issues when I attempt to use arrays to store large data sets.
+    // Use vectors, not arrays. Arrays must be preallocated, and cannot change size at runtime. Furthermore, arrays are stored in the stack, which is very fast but limited in size. On the other hand, vectors are stored in the heap, which is much larger (and suited for storing large sets). My program runs into memory issues when I attempt to use arrays to store large data sets. So vector it is.
     std::vector<double> EKGDataMeas; // preallocate is faster, but you can always append to vectors (as opposed to arrays)
     std::vector<double> EKGTimes;
-    std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return arrays in C++ without some ridiculous legwork.
+    std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return multiple vectors in C++ without some ridiculous legwork.
     std::string tempString; // holds a 'number' while file is being parsed
     myFile.open(inputFile);
     
     if (myFile.is_open())
     {
+        //
+        // STEP 1: PARSE FILE
+        //
         int k = 0; // used to track position in vectors
         int loc;
         int flag;
@@ -116,5 +185,14 @@ int main(int argc, const char * argv[])
         }
     }
     myFile.close();
+    
+    //
+    // STEP 2: COMPUTE STATISTICS
+    //
+    double sum = std::accumulate(EKGDataMeas.begin(), EKGData.end(), 0.0);
+    
+    
+    
+    
     return 0;
 }

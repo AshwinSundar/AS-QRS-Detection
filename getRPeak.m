@@ -35,7 +35,7 @@ refracPer = 0.250; % 250 milliseconds = 240bpm, which is probably
 % humanly impossible.
 j = 1;
 for i=1:(length(buffer)-1)
-    if(exist('RPeaks', 'var')) % checks if a variable with name RPeaks exists
+    if(exist('RPeaks', 'var')) % checks if a variable with name RPeaks exists. AI: A bit inefficient - why not use a bool to evaluate the condition once? 
         if(buffer(i,2) > (signalMean + 3*signalStDev) && (buffer(i,1) - RPeaks(j-1, 1)) > refracPer && buffer(i,2) > buffer(i+1,2))
             RPeaks(j,:) = buffer(i,:);
             j = j + 1;
