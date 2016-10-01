@@ -3,9 +3,9 @@
 //// //// //// //// ////
 // Title of File: main.cpp
 // Name of Editor: Ashwin Sundar
-// Date of GitHub commit: September 29, 2016
+// Date of GitHub commit: October 1, 2016
 // What specific changes were made to this code, compared to the currently up-to-date code
-// on GitHub?: Implementing getRPeak. I'm creating a custom vector at the moment that will compute stats for me so I don't have to keep doing it. Next step is to finish writing getStDev and implement ASVector. 
+// on GitHub?: Finished creating ASVector, which inherits from std::vector<double>. I added some built-in statistics functions so I don't have to use a for loop every time I want to know something about the vector. Also made a print function for ASVector. getRPeak has some bugs, next step is to fix those bugs.
 //// //// //// //// ////
 // Best coding practices
 // 1) When you create a new variable or function, make it obvious what the variable or
@@ -23,53 +23,66 @@
 #include <climits>
 #include <vector>
 #include "stdio.h"
+#include <cmath>
 
 std::ifstream myFile;
 std::string line;
 
-class ASVector
+class ASVector : public std::vector<double> // ASVector inherits from std::vector<double>
 {
 private:
-    std::vector<double> vec;
 public:
-    double getMean();
+    double getMean(ASVector vec) // this seems like a circular reference here, but the compiler seems fine with it. Not sure why.
+    {
+        double sum = 0;
+        double vecLen = vec.size();
+        
+        for (int i = 0; i < vecLen; i++)
+        {
+            sum += vec[i];
+        }
+        double mean = sum/vecLen;
+        return mean;
+    }
+    
+    double getStDev(ASVector vec) // this seems like a circular reference here, but the compiler seems fine with it. Not sure why.
+    {
+        // subtract mean from each value, square each, add them up
+        double vecLen = vec.size();
+        double vecMean = vec.getMean(vec); // only need to do this once
+        double stDev = 0.0;
+        for (int i = 0; i < vecLen; i++)
+        {
+            stDev += pow((vec[i] - vecMean), 2);
+        }
+        
+        stDev = stDev/vecLen;
+        return stDev;
+    }
+    
+    void print(ASVector vec)
+    {
+        for (int i = 0; i < vec.size(); i++)
+        {
+            std::cout << vec[i];
+        }
+        std::cout << "\n";
+    }
     
 };
 
-double ASVector::getMean()
-{
-    double sum = 0;
-    double vecLen = sizeof(vec);
-    for (int i = 0; i < vecLen; i++)
-    {
-        sum += vec[i];
-    }
-    double mean = sum/vecLen;
-    return mean;
-}
-
-double ASVector::getStDev()
-{
-    // subtract mean from each value, square each, add them up
-    double vecLen = sizeof(vec);
-    for (int i = 0; i < vecLen, )
-}
-
-
-
-
-
-std::vector<double> getRPeak(std::vector<double> EKGDataMeasBuffer, std::vector<double> EKGTimesBuffer, double signalMean, double signalStDev)
+ASVector getRPeak(ASVector EKGDataMeasBuffer, ASVector EKGTimesBuffer)
 {
 // I won't have access to a linear algebra toolbox in Particle. Since the amount of data above 3SD is very small, I think I'll just use the median (or left of median if I have an even number of points). Next, let's locate the R peak. The R peak should be above the signal mean, let's say 3 standard deviations beyond the signalMean. I could preallocate a buffer to store the RPeak, but it's so small that I don't think it will matter. I could use parallel processing, but I won't have access to that in Particle, so I won't.
     int sampleRate = 360; // AI: Needs to update dynamically depending on data stream
     double refracPer = 0.250; // AI: Need a better reference for using this number (250 ms = 240 bpm)
-    std::vector<double> RPeaksTimes;
+    double signalMean = EKGDataMeasBuffer.getMean(EKGDataMeasBuffer);
+    double signalStDev = EKGDataMeasBuffer.getStDev(EKGDataMeasBuffer);
+    bool flag = 0; // used for initial part of data, when refrac period hasn't kicked in yet
+    ASVector RPeaksTimes;
     int j = 1; // counter
     for (int i = 0; i < sizeof(EKGTimesBuffer); i++)
     {
-        bool flag = 0; // used for the first portion of the code
-
         if (flag) // then the refrac period has kicked in
         {
             if(EKGDataMeasBuffer[i] > (signalMean + 3*signalStDev) & EKGTimesBuffer[i] - RPeaksTimes[j-1] > refracPer & EKGDataMeasBuffer[i] > EKGDataMeasBuffer[i+1])
@@ -98,19 +111,18 @@ std::vector<double> getRPeak(std::vector<double> EKGDataMeasBuffer, std::vector<
 
 int main(int argc, const char * argv[])
 {
-
     // Use vectors, not arrays. Arrays must be preallocated, and cannot change size at runtime. Furthermore, arrays are stored in the stack, which is very fast but limited in size. On the other hand, vectors are stored in the heap, which is much larger (and suited for storing large sets). My program runs into memory issues when I attempt to use arrays to store large data sets. So vector it is.
-    std::vector<double> EKGDataMeas; // preallocate is faster, but you can always append to vectors (as opposed to arrays)
-    std::vector<double> EKGTimes;
-    std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return multiple vectors in C++ without some ridiculous legwork.
+    ASVector EKGDataMeas; // preallocate is faster, but you can always append to vectors (as opposed to arrays, which are static at runtime)
+    ASVector EKGTimes;
+    std::string inputFile = "MITBIH100fullData.txt"; // I'm doing all this nasty file delimiting in main and not a separate function because I can't return multiple vectors in C++ without some ridiculous legwork. I suppose I could have used separate functions to handle each data set, but I already wrote this code.
     std::string tempString; // holds a 'number' while file is being parsed
     myFile.open(inputFile);
     
+//
+// STEP 1: PARSE FILE
+//
     if (myFile.is_open())
     {
-        //
-        // STEP 1: PARSE FILE
-        //
         int k = 0; // used to track position in vectors
         int loc;
         int flag;
@@ -189,10 +201,12 @@ int main(int argc, const char * argv[])
     //
     // STEP 2: COMPUTE STATISTICS
     //
-    double sum = std::accumulate(EKGDataMeas.begin(), EKGData.end(), 0.0);
+    // I built statistics computations into the ASVector custom class. Nothing to do here.
     
-    
-    
-    
+    //
+    // STEP 3: GET R PEAKS
+    //
+    ASVector RPeaks = getRPeak(EKGDataMeas, EKGTimes);
+    RPeaks.print(RPeaks);
     return 0;
 }
